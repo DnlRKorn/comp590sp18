@@ -1,0 +1,61 @@
+package apps;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+public class TileVideoApp extends VideoApp {
+	
+	/**
+	 * Given an area of a frame (a tile), specified by a frame, an x y coordinate pair, and a size. 
+	 * Returns the frame number that will minimize total differences.
+	 *
+	 * @param frame Image of the current frame. 
+	 * @param tile_x X coordinate of the tile.
+	 * @param tile_y Y coordinate of the tile.
+	 * @param tileSize Size of the tile. If this is 1, it will do bucketing on a pixel level.
+	 * @param buckets Number of buckets we want our model to have for each tile.
+	 */
+	private static int tileNum(int[][] frame, int tile_x, int tile_y, int tileSize, int buckets){
+		int bucketSize = 256/buckets;
+		int tileNum = 0;
+		int frameVal;
+		for (int y=tile_y; y<tileSize + tile_y; y++) {
+			for (int x=tile_x; x<tile_x+tileSize; x++) {
+				//Want to get the buckets which start at 0 and spread out [-bucketSize / 2 , bucketSize/2]
+				//to be initialize at 0. 
+				frameVal = (frame[x][y] + bucketSize/2) % 256;
+				int bucketNum = 0;
+				while(frameVal >= bucketSize){ //[0 to bucketSize) counts as bucket.
+					bucketNum++;
+					frameVal=- bucketSize;
+				}
+				tileNum *= bucketSize;//If the number of buckets is a power of 2, this will shift the bits of tileNum.
+				tileNum += bucketNum;//Append the bits of the tile count on the end
+				}
+		}
+		return tileNum;
+	}
+	
+	public static int[] generateTileDictonary(InputStream videoStream, int tileSize, int buckets, int dictonarySize){
+		InputStream training_values = new FileInputStream(file);
+		int width = 800;
+		int height = 450;
+		int num_frames = 150;
+		int[][] current_frame = new int[width][height];
+	
+		int[] tileCount = new int[bucketSize ^ tileSize]; 
+		
+		for (int f=0; f < num_frames; f++) {
+			current_frame = readFrame(training_values, width, height);
+			for (int y=0; y<height; y+= tileSize) {
+				for (int x=0; x<width; x+= tileSize) {
+					int tileNum = tileNum(current_frame, x, y, tileSize, buckets);
+					tileCount[tileNum]++;
+				}
+			}
+		}
+		training_values.close();
+
+	}
+	
+}

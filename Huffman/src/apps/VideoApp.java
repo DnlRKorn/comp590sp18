@@ -107,7 +107,7 @@ public class VideoApp {
 
 	}
 
-	private static int[][] readFrame(InputStream src, int width, int height) 
+	protected static int[][] readFrame(InputStream src, int width, int height) 
 			throws IOException {
 		int[][] frame_data = new int[width][height];
 		for (int y=0; y<height; y++) {
@@ -189,4 +189,7 @@ public class VideoApp {
 			}
 		}
 	}
+	
+
+	
 }
