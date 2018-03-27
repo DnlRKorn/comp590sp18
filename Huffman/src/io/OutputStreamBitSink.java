@@ -15,7 +15,7 @@ public class OutputStreamBitSink implements BitSink {
 		_available = 32;
 	}
 
-	@Override
+//	@Override
 	public int write(int bits, int length) throws IOException {
 		if (length > 32) {
 			throw new RuntimeException("Can't write more than 32 bits from an int");
@@ -47,7 +47,7 @@ public class OutputStreamBitSink implements BitSink {
 		return length;
 	}
 
-	@Override
+	//@Override
 	public int write(String bitstring) throws IOException {
 		for (int i=0; i<bitstring.length(); i++) {
 			if (bitstring.charAt(i) == '0') {
@@ -59,7 +59,7 @@ public class OutputStreamBitSink implements BitSink {
 		return bitstring.length();
 	}
 
-	@Override
+	//@Override
 	public int padToWord() throws IOException {
 		return write (0x0, _available);
 	}

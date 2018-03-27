@@ -44,7 +44,7 @@ public class ArithmeticEncoder implements SymbolEncoder {
 		}
 	}
 	
-	@Override
+//	@Override
 	public void encode(Symbol s, BitSink out) throws IOException {
 
 		if (_model == null) {

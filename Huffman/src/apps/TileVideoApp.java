@@ -12,8 +12,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
@@ -45,7 +49,6 @@ public class TileVideoApp extends VideoApp {
 		File file = new File(filename);
 		int width = 800;
 		int height = 450;
-		int num_frames = 150;
 
 
 		Unsigned8BitModel dictionaryModel = new Unsigned8BitModel();
@@ -98,11 +101,11 @@ public class TileVideoApp extends VideoApp {
 		
 		//InputStream message = new FileInputStream(file);
 
-		File out_file = new File(base + "-dictionary.dat");
+		File out_file = new File(base + "-tileSize-" + TILE_SIZE + "-dictSize-" + DICTIONARY_SIZE + "-buckets-" + BUCKETS+ "-dictionary.dat");
 		OutputStream out_stream = new FileOutputStream(out_file);
 		BitSink bit_sink = new OutputStreamBitSink(out_stream);
 
-		for (int f=0; f < num_frames; f++) {
+		for (int f=0; f < NUM_FRAMES; f++) {
 			System.out.println("Encoding frame difference " + f);
 			int[][] frame_dictionary = video_dictionary_encoding[f];
 			//int[][] diff_frame = frameDifference(prior_frame, current_frame);
@@ -115,15 +118,15 @@ public class TileVideoApp extends VideoApp {
 		
 		InputStream message = new FileInputStream(file);
 
-		out_file = new File(base + "-residuals.dat");
+		out_file = new File(base + "-tileSize-" + TILE_SIZE + "-dictSize-" + DICTIONARY_SIZE + "-buckets-" + BUCKETS+ "-residuals.dat");
 		out_stream = new FileOutputStream(out_file);
 		bit_sink = new OutputStreamBitSink(out_stream);
 
 		current_frame = new int[width][height];
 
-		for (int f=0; f < num_frames; f++) {
-			System.out.println("Encoding frame difference " + f);
-			current_frame = readFrame(training_values, WIDTH, HEIGHT);
+		for (int f=0; f < NUM_FRAMES; f++) {
+			System.out.println("Encoding frame residuals " + f);
+			current_frame = readFrame(message, WIDTH, HEIGHT);
 			int[][] residualFrame = residualsFromEncodedFrame(current_frame, video_dictionary_encoding[f], TILE_SIZE, BUCKETS, dictionary);
 			encodeFrameDifference(residualFrame, residualEncoder, bit_sink, residualSymbols);
 		}
@@ -239,7 +242,8 @@ public class TileVideoApp extends VideoApp {
 			int absDiff = 0;
 			for (int y=0; y<tileSize; y++) {
 				for (int x=0; x<tileSize; x++) {
-					absDiff += Math.abs(frame[tile_x+x][tile_y+y] - dictTile[x][y]);
+					int tmp = Math.abs(frame[tile_x+x][tile_y+y] - dictTile[x][y]);
+					absDiff += tmp * tmp;
 				}
 			}
 			if(absDiff < bestDiff){
@@ -250,7 +254,7 @@ public class TileVideoApp extends VideoApp {
 		return bestDic;
 	}
 	
-	public static int[] generateTileDictonary(InputStream videoStream, int tileSize, int buckets, int dictonarySize) throws IOException{
+	public static int[] generateTileDictonary(InputStream videoStream, int tileSize, int buckets, int dictionarySize) throws IOException{
 		int[][] current_frame = new int[WIDTH][HEIGHT];
 	
 		final class Pair implements Comparable<Pair>{
@@ -269,33 +273,33 @@ public class TileVideoApp extends VideoApp {
 		}
 	
 		
-		Pair[] tileCount = new Pair[(int) Math.pow(buckets,tileSize * tileSize)]; 
-		for (int i=0; i<tileCount.length;i++) tileCount[i] = new Pair(i);
+		//Pair[] tileCount = new Pair[(int) Math.pow(buckets,tileSize * tileSize)]; 
+		Map<Integer, Pair> tileCountMap = new HashMap<Integer,Pair>();
+		
 		for (int f=0; f < NUM_FRAMES; f++) {
 			current_frame = readFrame(videoStream, WIDTH, HEIGHT);
 			for (int y=0; y<HEIGHT-tileSize+1; y+= tileSize) {
 				for (int x=0; x<WIDTH-tileSize+1; x+= tileSize) {
 					int tileNum = tileNum(current_frame, x, y, tileSize, buckets);
-					tileCount[tileNum].count++;
-					//if(tileNum==65536){
-					//	System.out.println("Hello World");
-					//}
+					tileCountMap.putIfAbsent(tileNum, new Pair(tileNum));
+					Pair pair_idx = tileCountMap.get(tileNum);
+					pair_idx.count++;
 				}
 			}
 			System.out.println("Frame i: " + f);
 		}
 		
-		java.util.Arrays.sort(tileCount);
-
+		ArrayList<Pair> counts = new ArrayList<Pair>(tileCountMap.values());
+		java.util.Collections.sort(counts);
 		
-		int[] dictonary = new int[dictonarySize];
-		for(int i=0; i < dictonarySize; i++) dictonary[i] = -1;
+		int[] dictionary = new int[dictionarySize];
 		
-		for(int i=0; i < dictonarySize; i++){
-			Pair val_i = tileCount[i];
-			dictonary[i] = val_i.idx;
+		for(int i=0; i < dictionarySize; i++){
+			Pair val_i = counts.get(i);
+			if(val_i==null) dictionary[i] = 0;
+			else dictionary[i] = val_i.idx;
 		}
-		return dictonary;
+		return dictionary;
 	}
 	
 	public static int[][] encodeFrameWithDictonary(int[][] frame, int tileSize, int buckets, int[] dictonary){
@@ -314,14 +318,18 @@ public class TileVideoApp extends VideoApp {
 	
 	public static int[][] residualsFromEncodedFrame(int[][] frame, int[][] tileFrame, int tileSize, int buckets, int[] dictonary){
 		int[][] residuals = new int[WIDTH][];
-		for(int i=0; i < HEIGHT; i++) residuals[i] = (int[]) frame[i].clone();
-		for (int y=0; y<HEIGHT-tileSize+1; y+= tileSize) {
-			for (int x=0; x<WIDTH-tileSize+1; x+= tileSize) {
+		for(int i=0; i < WIDTH; i++) residuals[i] = (int[]) frame[i].clone();
+		
+		int tileWidth = (WIDTH-tileSize+1) / tileSize;
+		int tileHeight = (HEIGHT-tileSize+1) / tileSize;
+		
+		for (int y=0; y<tileHeight; y++) {
+			for (int x=0; x<tileWidth; x++) {
 				int dictonaryIdx = tileFrame[x][y];
 				int[][] tile = tileNumToTile(dictonary[dictonaryIdx], tileSize, buckets);
 				for(int j=0;j<tileSize;j++){
 					for(int i=0;i<tileSize;i++){
-						residuals[x*tileSize+i][y*tileSize+j] -= tile[i][j];
+						residuals[x*tileSize+i][y*tileSize+j] = ((residuals[x*tileSize+i][y*tileSize+j] - tile[i][j] % 256) + 256) % 256;
 					}
 				}
 			}

@@ -33,7 +33,7 @@ public class HuffmanEncoder implements SymbolEncoder {
 		return _code_map;
 	}
 
-	@Override
+//	@Override
 	public void encode(Symbol s, BitSink out) throws IOException {
 		if (_closed) {
 			throw new RuntimeException("Attempt to encode symbol on closed encoder");
@@ -46,7 +46,7 @@ public class HuffmanEncoder implements SymbolEncoder {
 		}
 	}
 
-	@Override
+//	@Override
 	public void close(BitSink out) throws IOException {
 		out.padToWord();
 		_closed = true;
@@ -63,7 +63,7 @@ public class HuffmanEncoder implements SymbolEncoder {
 
 		while (nodes.size() > 1) { 
 			Collections.sort(nodes, new Comparator<HENode>() {
-				@Override
+	//			@Override
 				public int compare(HENode a, HENode b) {
 					if (a.probability() < b.probability()) {
 						return 1;

@@ -49,7 +49,7 @@ public class ArithmeticDecoder implements SymbolDecoder {
 		return _high-_low+1;
 	}
 
-	@Override
+//	@Override
 	public Symbol decode(BitSource bit_source) throws InsufficientBitsLeftException, IOException {
 
 		if (_model == null) {

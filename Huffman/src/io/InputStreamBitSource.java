@@ -15,7 +15,7 @@ public class InputStreamBitSource implements BitSource {
 		_available = 0;
 	}
 
-	@Override
+//	@Override
 	public int next(int count) throws InsufficientBitsLeftException, IOException {
 
 		if (count > 32) {

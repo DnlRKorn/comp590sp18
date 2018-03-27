@@ -20,7 +20,7 @@ public class Unsigned8BitModel implements SourceModel {
 			return _value;
 		}
 		
-		@Override
+//		@Override
 		public int compareTo(Symbol o) {
 			if (!(o instanceof Unsigned8BitSymbol)) {
 				throw new IllegalArgumentException("Unsigned8BitSymbol only comparable to type of same");
@@ -71,12 +71,12 @@ public class Unsigned8BitModel implements SourceModel {
 			_count++;
 		}
 
-		@Override
+//		@Override
 		public long getProbability(long precision) {
 			return _count * precision / _model.getCountTotal();
 		}
 
-		@Override
+//		@Override
 		public Symbol getSymbol() {
 			return _symbol;
 		}
@@ -125,12 +125,12 @@ public class Unsigned8BitModel implements SourceModel {
 		_count_total++;
 	}
 
-	@Override
+//	@Override
 	public int getSymbolCount() {
 		return _values.length;
 	}
 
-	@Override
+//	@Override
 	public SymbolModel getByIndex(int i) {
 		return _values[i];
 	}
