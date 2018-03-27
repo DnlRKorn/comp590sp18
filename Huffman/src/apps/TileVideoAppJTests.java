@@ -2,7 +2,11 @@ package apps;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
@@ -80,13 +84,33 @@ public class TileVideoAppJTests {
 	
 	@Test
 	public void generateTileDictonaryTest() throws IOException{
-		InputStream stubInputStream = Mockito.mock(InputStream.class);
-		Mockito.when(stubInputStream.read()).thenReturn(0);
+		
+		String filename= "test.bin";
+		File file = new File(filename);
+	    //BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+	    //for(int i = 0; i<800*450*150;i++) writer.write(0);
+	    //writer.close();
+		InputStream test_vals = new FileInputStream(file);
 		int tileSize = 3;
 		int buckets = 4;
 		int dictSize = 1;
-		int[] dict = TileVideoApp.generateTileDictonary(stubInputStream, tileSize, buckets, dictSize);
-		assertEquals(dict.length, 1);
-		assertEquals(dict[0], 0);
+		//int[] dict = TileVideoApp.generateTileDictonary(test_vals, tileSize, buckets, dictSize);
+		//test_vals.close();
+		//assertEquals(dict.length, 1);
+		//assertEquals(dict[0], 0);
+		//file.delete();
+		//file = new File(filename);
+	    //writer = new BufferedWriter(new FileWriter(file));
+	    //writer.write(128); //write a single frame with a single pixel in bucket 2.
+	    //for(int i = 1; i<800*450*150;i++) writer.write(0);
+	    //writer.close();
+		dictSize = 2;
+		//test_vals = new FileInputStream(file);
+		int[] dict = TileVideoApp.generateTileDictonary(test_vals, tileSize, buckets, dictSize);
+		assertEquals(dict.length, 2);
+		assertEquals(0, dict[0]);
+		int target = (int) (1 * Math.pow(4,8));
+		assertEquals(dict[1], target);
+		//file.delete();
 	}
 }

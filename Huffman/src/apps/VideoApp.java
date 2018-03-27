@@ -132,7 +132,7 @@ public class VideoApp {
 		return difference_frame;
 	}
 
-	private static void trainModelWithFrame(Unsigned8BitModel model, int[][] frame) {
+	protected static void trainModelWithFrame(Unsigned8BitModel model, int[][] frame) {
 		int width = frame.length;
 		int height = frame[0].length;
 		for (int y=0; y<height; y++) {
@@ -142,7 +142,7 @@ public class VideoApp {
 		}
 	}
 
-	private static void encodeFrameDifference(int[][] frame, SymbolEncoder encoder, BitSink bit_sink, Symbol[] symbols) 
+	protected static void encodeFrameDifference(int[][] frame, SymbolEncoder encoder, BitSink bit_sink, Symbol[] symbols) 
 			throws IOException {
 
 		int width = frame.length;
