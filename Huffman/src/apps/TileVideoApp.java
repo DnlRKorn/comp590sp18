@@ -39,9 +39,9 @@ public class TileVideoApp extends VideoApp {
 	public static final int HEIGHT = 450;
 	public static final int NUM_FRAMES = 150;
 	
-	public static final int TILE_SIZE = 3;
+	public static final int TILE_SIZE = 4;
 	public static final int BUCKETS = 4;
-	public static final int DICTIONARY_SIZE = 64;
+	public static final int DICTIONARY_SIZE = 128;
 	
 	public static void main(String[] args) throws IOException, InsufficientBitsLeftException {
 		String base = "bunny";
